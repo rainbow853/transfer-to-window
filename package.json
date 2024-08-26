@@ -1,0 +1,22 @@
+{
+  "name": "transfer-to-window",
+  "version": "1.0.0",
+  "description": "将指定窗口大小的数据转化输出到另一窗口大小",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "author": "",
+  "keywords": [
+    "transfer",
+    "window"
+  ],
+  "homepage": "https://github.com/fengqing1101/TransferToWindow",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.5.3"
+  },
+  "files": ["dist"]
+}
