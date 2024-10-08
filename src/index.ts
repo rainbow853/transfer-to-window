@@ -160,7 +160,7 @@ class TransferToWindow {
   }
 
   /**
-   * 坐标(x,y)是否位于输出视框内
+   * 坐标(x,y)是否位于输入视框内
    */
   inCoorIsIn(x: number, y: number): boolean {
     const { inw, inh } = this;
