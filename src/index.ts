@@ -11,6 +11,10 @@ interface param {
   minWH?: number;
   /** 输入窗口转化到输出窗口后最大的宽高尺寸；默认值:Infinity */
   maxWH?: number;
+  // 是否限制数据始终有区域位于窗口内部
+  limitInWindow?: boolean;
+  // 显示在窗口内部的最小值
+  limitSize?: number;
 }
 
 class TransferToWindow {
@@ -26,6 +30,10 @@ class TransferToWindow {
   minWH: number;
   /** 输入窗口转化到输出窗口后最大的宽高尺寸 */
   maxWH: number;
+  // 是否限制数据始终有区域位于窗口内部
+  limitInWindow: boolean;
+  // 显示在窗口内部的最小值
+  limitSize: number;
   /** 最小缩放比例 */
   minScale: number;
   /** 最大缩放比例 */
@@ -50,7 +58,7 @@ class TransferToWindow {
    * @param silent 是否计算输入输出窗口之间的变化矩阵
    */
   constructor(param: param, silent?: boolean) {
-    const { inw, inh, outw, outh, minWH, maxWH } = param;
+    const { inw, inh, outw, outh, minWH, maxWH, limitInWindow, limitSize } = param;
     this.inw = inw;
     this.inh = inh;
     this.outw = outw;
@@ -58,9 +66,10 @@ class TransferToWindow {
     this.minWH = minWH || 1;
     this.maxWH = maxWH || Infinity;
     this.minScale = this.maxScale = 1;
+    this.limitInWindow = limitInWindow || false;
+    this.limitSize = limitSize ?? 100;
     silent || this.resize();
   }
-
   /**
    * 平移
    * @param dx 
@@ -102,7 +111,7 @@ class TransferToWindow {
    */
   resize() {
     const { outw, outh, inw, inh, minWH, maxWH } = this;
-    let scale;
+    let scale: number;
     if (outw / outh > inw / inh) {
       scale = outh / inh;
     } else {
@@ -144,6 +153,11 @@ class TransferToWindow {
    * 更新输入->输出矩阵
    */
   updateMatrix(scale: number, dx: number, dy: number) {
+    if (this.limitInWindow) {
+      const { inw, inh, outw, outh, limitSize } = this;
+      dx = Math.min(outw - limitSize, Math.max(-inw * scale + limitSize, dx));
+      dy = Math.min(outh - limitSize, Math.max(-inh * scale + limitSize, dy));
+    }
     this.scale = scale;
     this.dx = dx;
     this.dy = dy;
@@ -179,7 +193,7 @@ class TransferToWindow {
    * 转化坐标组(x,y,...)
    */
   private transCoors(coors: number[], scale: number, dx: number, dy: number): number[] {
-    const result = [];
+    const result: number[] = [];
     for (let i = 1; i < coors.length; i = i + 2) {
       result.push(
         ~~((coors[i - 1]) * scale + dx),
@@ -207,4 +221,4 @@ class TransferToWindow {
 
 }
 
-export { TransferToWindow }
+export { TransferToWindow, TransferToWindow as default }

@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    "target": "es6",
-    "module": "UMD",
+    "target": "ES6",
+    "module": "ESNext",
     "declaration": true,
-    "outDir": "./dist",
+    "declarationDir": "./dist",
+    "outDir": "./temp/mjs",
     "rootDir": "./src",
     "strict": true
   },

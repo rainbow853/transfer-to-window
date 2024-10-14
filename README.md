@@ -22,6 +22,10 @@ new TransferToWindow(
     minWH?: number,
     // 输入窗口转化到输出窗口后最大的宽高尺寸；默认值:Infinity
     minWH?: number,
+    // 是否限制数据始终有区域位于窗口内部
+    limitInWindow?: boolean,
+    // 显示在窗口内部的最小值
+    limitSize?: number,
   },
   // 是否计算输入输出窗口之间的变化矩阵
   slient?: boolean
@@ -126,6 +130,7 @@ window.onload = function () {
     inh: 16384,
     outw: ele.clientWidth,
     outh: ele.clientHeight,
+    limitInWindow: true,
   })
   setTransform();
 
