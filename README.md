@@ -43,6 +43,11 @@ translate(dx: number, dy: number) => void
 zoom(cx: number, cy: number, ratio: number) => void
 ```
 
+- 缩放；以InCoor：(cx,cy)为中心缩放到scale比例
+```typescript
+zoomToByInCoor(cx: number, cy: number, scale: number) => void
+```
+
 - 将输入数据完整放置于输出窗口的正中间
 ```typescript
 resize() => void

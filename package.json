@@ -1,6 +1,6 @@
 {
   "name": "transfer-to-window",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "将指定窗口大小的数据转化输出到另一窗口大小",
   "types": "./dist/index.d.ts",
   "exports": {

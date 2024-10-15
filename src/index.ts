@@ -11,9 +11,9 @@ interface param {
   minWH?: number;
   /** 输入窗口转化到输出窗口后最大的宽高尺寸；默认值:Infinity */
   maxWH?: number;
-  // 是否限制数据始终有区域位于窗口内部
+  /** 是否限制数据始终有区域位于窗口内部 */
   limitInWindow?: boolean;
-  // 显示在窗口内部的最小值
+  /** 显示在窗口内部的最小值 */
   limitSize?: number;
 }
 
@@ -30,9 +30,9 @@ class TransferToWindow {
   minWH: number;
   /** 输入窗口转化到输出窗口后最大的宽高尺寸 */
   maxWH: number;
-  // 是否限制数据始终有区域位于窗口内部
+  /** 是否限制数据始终有区域位于窗口内部 */
   limitInWindow: boolean;
-  // 显示在窗口内部的最小值
+  /** 显示在窗口内部的最小值 */
   limitSize: number;
   /** 最小缩放比例 */
   minScale: number;
@@ -104,6 +104,22 @@ class TransferToWindow {
   }
 
   /**
+   * 以InCoor：(cx,cy)为中心缩放到scale比例
+   * @param cx 
+   * @param cy 
+   * @param scale 
+   */
+  zoomToByInCoor(cx: number, cy: number, scale: number) {
+    const { outw, outh, minScale, maxScale } = this;
+    scale = Math.min(maxScale, Math.max(minScale, scale));
+    this.updateMatrix(
+      scale,
+      outw / 2 - cx * scale,
+      outh / 2 - cy * scale,
+    );
+  }
+
+  /**
    * 将输入数据完整放置于输出窗口的正中间；效果类似于CSS效果：
    *    background-size: contain;
    *    background-repeat: no-repeat;
@@ -137,16 +153,13 @@ class TransferToWindow {
    * @param margin roi的margin值
    */
   scrollToRect(x: number, y: number, width: number, height: number, margin?: number) {
-    margin = margin || 100;
+    margin = margin ?? 100;
     const { outw, outh } = this;
-    this.scale = 1;
-    this.dx = outw / 2 - x - width / 2
-    this.dy = outh / 2 - y - height / 2
     const scale = Math.min(
       outw / (width + margin),
       outh / (height + margin),
     )
-    this.zoom(outw / 2, outh / 2, scale);
+    this.zoomToByInCoor(x + width / 2, y + height / 2, scale);
   }
 
   /**
