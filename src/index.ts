@@ -7,6 +7,10 @@ interface param {
   outw: number;
   /** 输出高 */
   outh: number;
+  /** 单元格宽；默认值:1 */
+  cellW?: number;
+  /** 单元格高；默认值:1 */
+  cellH?: number;
   /** 输入窗口转化到输出窗口后最小的宽高尺寸；默认值:1 */
   minWH?: number;
   /** 输入窗口转化到输出窗口后最大的宽高尺寸；默认值:Infinity */
@@ -26,6 +30,10 @@ class TransferToWindow {
   outw: number;
   /** 输出高 */
   outh: number;
+  /** 单元格宽；默认值:1 */
+  cellW: number;
+  /** 单元格高；默认值:1 */
+  cellH: number;
   /** 输入窗口转化到输出窗口后最小的宽高尺寸 */
   minWH: number;
   /** 输入窗口转化到输出窗口后最大的宽高尺寸 */
@@ -40,16 +48,19 @@ class TransferToWindow {
   maxScale: number;
   /**
    * 输入->输出的变化矩阵
-   * [scale, 0, 0, 0, scale, 0, dx, dy, 1]
+   * [scaleX, 0, 0, 0, scaleY, 0, dx, dy, 1]
    */
   scale!: number;
+  scaleX!: number;
+  scaleY!: number;
   dx!: number;
   dy!: number;
   /**
    * 输出->输入的变化矩阵
-   * [invScale, 0, 0, 0, invScale, 0, invDx, invDy, 1]
+   * [invScaleX, 0, 0, 0, invScaleY, 0, invDx, invDy, 1]
    */
-  invScale!: number;
+  invScaleX!: number;
+  invScaleY!: number;
   invDx!: number;
   invDy!: number;
   /**
@@ -58,11 +69,13 @@ class TransferToWindow {
    * @param silent 是否计算输入输出窗口之间的变化矩阵
    */
   constructor(param: param, silent?: boolean) {
-    const { inw, inh, outw, outh, minWH, maxWH, limitInWindow, limitSize } = param;
+    const { inw, inh, outw, outh, cellW, cellH, minWH, maxWH, limitInWindow, limitSize } = param;
     this.inw = inw;
     this.inh = inh;
     this.outw = outw;
     this.outh = outh;
+    this.cellW = cellW ?? 1;
+    this.cellH = cellH ?? 1;
     this.minWH = minWH || 1;
     this.maxWH = maxWH || Infinity;
     this.minScale = this.maxScale = 1;
@@ -70,6 +83,7 @@ class TransferToWindow {
     this.limitSize = limitSize ?? 100;
     silent || this.resize();
   }
+
   /**
    * 平移
    * @param dx 
@@ -110,12 +124,12 @@ class TransferToWindow {
    * @param scale 
    */
   zoomToByInCoor(cx: number, cy: number, scale: number) {
-    const { outw, outh, minScale, maxScale } = this;
+    const { outw, outh, minScale, maxScale, cellW, cellH } = this;
     scale = Math.min(maxScale, Math.max(minScale, scale));
     this.updateMatrix(
       scale,
-      outw / 2 - cx * scale,
-      outh / 2 - cy * scale,
+      outw / 2 - cx * scale * cellW,
+      outh / 2 - cy * scale * cellH,
     );
   }
 
@@ -172,6 +186,8 @@ class TransferToWindow {
       dy = Math.min(outh - limitSize, Math.max(-inh * scale + limitSize, dy));
     }
     this.scale = scale;
+    this.scaleX = scale * this.cellW;
+    this.scaleY = scale * this.cellH;
     this.dx = dx;
     this.dy = dy;
     this.updateInvMatrix();
@@ -181,9 +197,10 @@ class TransferToWindow {
    * 更新输出->输入矩阵
    */
   private updateInvMatrix() {
-    this.invScale = 1 / this.scale;
-    this.invDx = -this.dx / this.scale;
-    this.invDy = -this.dy / this.scale;
+    this.invScaleX = 1 / this.scaleX;
+    this.invScaleY = 1 / this.scaleY;
+    this.invDx = -this.dx * this.invScaleX;
+    this.invDy = -this.dy * this.invScaleY;
   }
 
   /**
@@ -205,12 +222,12 @@ class TransferToWindow {
   /**
    * 转化坐标组(x,y,...)
    */
-  private transCoors(coors: number[], scale: number, dx: number, dy: number): number[] {
+  private transCoors(coors: number[], scaleX: number, scaleY: number, dx: number, dy: number): number[] {
     const result: number[] = [];
     for (let i = 1; i < coors.length; i = i + 2) {
       result.push(
-        ~~((coors[i - 1]) * scale + dx),
-        ~~((coors[i]) * scale + dy),
+        ~~((coors[i - 1]) * scaleX + dx),
+        ~~((coors[i]) * scaleY + dy),
       );
     }
     return result;
@@ -220,16 +237,16 @@ class TransferToWindow {
    * 将输入坐标组(x,y,...)转化为输出坐标组
    */
   transInToOut(coors: number[]): number[] {
-    const { scale, dx, dy } = this;
-    return this.transCoors(coors, scale, dx, dy);
+    const { scaleX, scaleY, dx, dy } = this;
+    return this.transCoors(coors, scaleX, scaleY, dx, dy);
   }
 
   /**
    * 将输出坐标组(x,y,...)转化为输入坐标组
    */
   transOutToIn(coors: number[]): number[] {
-    const { invScale, invDx, invDy } = this;
-    return this.transCoors(coors, invScale, invDx, invDy);
+    const { invScaleX, invScaleY, invDx, invDy } = this;
+    return this.transCoors(coors, invScaleX, invScaleY, invDx, invDy);
   }
 
 }
