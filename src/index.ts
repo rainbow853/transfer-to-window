@@ -168,10 +168,10 @@ class TransferToWindow {
    */
   scrollToRect(x: number, y: number, width: number, height: number, margin?: number) {
     margin = margin ?? 100;
-    const { outw, outh } = this;
+    const { outw, outh, cellW, cellH } = this;
     const scale = Math.min(
-      outw / (width + margin),
-      outh / (height + margin),
+      (outw - margin * 2) / width / cellW,
+      (outh - margin * 2) / height / cellH,
     )
     this.zoomToByInCoor(x + width / 2, y + height / 2, scale);
   }
